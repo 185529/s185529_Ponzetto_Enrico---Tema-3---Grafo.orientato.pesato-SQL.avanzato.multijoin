@@ -1,6 +1,9 @@
 package it.polito.tdp.formulaone.model;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -12,6 +15,11 @@ public class Model {
 	
 	private List<Season> seasons;
 	private SimpleDirectedWeightedGraph<Driver, DefaultWeightedEdge> graph;
+	
+	// variabili di stato della ricorsione
+	
+	private int tassoMin;
+	private List<Driver> teamMin;
 	
 	public List<Season> getSeasons(){
 		
@@ -76,6 +84,80 @@ public class Model {
 		}
 		
 		return best;
+		
+	}
+	
+	public List<Driver> getDreamTeam(int K){
+		
+		Set<Driver> team = new HashSet<Driver>();
+		
+		this.tassoMin = Integer.MAX_VALUE;
+		this.teamMin = null;
+		
+		recursive(0, team, K);
+		
+		return this.teamMin;
+		
+	}
+	
+	/**
+	 * 
+	 * Ricevo in ingresso il team parziale composto da "passo (che parte da zero)" elementi
+	 * Termino quando passo=K
+	 * Calcolo tasso di sconfitta, altrimenti procedo ricorsivamente e aggiungo un nuovo vertice (non ancora nel team) al passo+1
+	 * 
+	 * @param passo
+	 * @param team
+	 * @param K
+	 * 
+	 */
+	private void recursive(int passo, Set<Driver> team, int K){
+		
+		// caso terminale
+		
+		if(passo==K){
+			
+			// calcolo tasso di sconfitta del team e aggiorno il minimo
+			
+			int tasso = this.tassoSconfitta(team);
+			
+			// eventuale aggiornamento minimo
+			
+			if(tasso<tassoMin){
+				
+				tassoMin = tasso;
+				teamMin = new ArrayList<Driver>(team);
+				
+			}
+			
+		} else {
+			
+			// caso normale --- scelgo il prossimo vertice
+			
+			Set<Driver> candidati = new HashSet<Driver>(this.graph.vertexSet());
+			candidati.removeAll(team);
+			
+			for(Driver d : candidati){
+				team.add(d);
+				recursive(passo+1, team, K);
+				team.remove(d);
+			}
+			
+		}
+		
+	}
+
+	private int tassoSconfitta(Set<Driver> team) {
+		
+		int tasso = 0;
+		
+		for(DefaultWeightedEdge e : this.graph.edgeSet()){
+			if(!team.contains(this.graph.getEdgeSource(e)) && team.contains(this.graph.getEdgeTarget(e))){
+				tasso += graph.getEdgeWeight(e);
+			}
+		}
+		
+		return tasso;
 		
 	}
 

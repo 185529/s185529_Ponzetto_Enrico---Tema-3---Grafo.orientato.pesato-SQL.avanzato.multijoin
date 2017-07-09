@@ -1,6 +1,7 @@
 package it.polito.tdp.formulaone;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.formulaone.model.Driver;
@@ -44,12 +45,40 @@ public class FormulaOneController {
     	
     	Driver best = model.getBestDriver();
     	
-    	txtResult.appendText(String.format("Il pilota migliore della stagione %d è %s\n", s.getYear().getValue(), best.toString()));
+    	txtResult.appendText(String.format("Il pilota migliore della stagione %d è stato %s\n", s.getYear().getValue(), best.toString()));
 
     }
 
     @FXML
     void doTrovaDreamTeam(ActionEvent event) {
+    	
+    	String input = textInputK.getText();
+    	
+    	int K;
+    	
+    	try {
+    		
+			K = Integer.parseInt(input);
+			
+		} catch (NumberFormatException e) {
+			
+			e.printStackTrace();
+			txtResult.setText("ERRORE: Inserire un numero.\n");
+			return;
+			
+		}
+    	
+    	Long start = System.nanoTime();
+    	
+    	List<Driver> dreamTeam = model.getDreamTeam(K);
+    	
+    	Long stop = System.nanoTime();
+    	
+    	txtResult.appendText("\nDREAM TEAM (N. "+K+" PILOTI IN "+(stop-start)/(1e9*60)+" MINUTI):\n");
+    	
+    	for(Driver d : dreamTeam){
+    		txtResult.appendText(d.toString()+"\n");
+    	}
 
     }
 
